@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { mdiGithub, mdiTwitter, mdiLinkedin } from '@mdi/js';
+	import { base } from '$app/paths';
 
 	let name = 'Adrián Lorenzo';
 	let description = `Chief Innovation Officer at The Agile Monkeys.
@@ -8,7 +9,7 @@ I explore and build Artificial Intelligence solutions.
 </script>
 
 <div class="container">
-	<img class="image" src="./portrait.jpg" alt="Portrait" />
+	<img class="image" src="{base}/portrait.jpg" alt="Portrait" />
 	<div>
 		<div class="header">{name}</div>
 		<div class="description">{description}</div>
