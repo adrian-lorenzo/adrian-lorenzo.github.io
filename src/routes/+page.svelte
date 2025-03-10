@@ -3,8 +3,8 @@
 	import { base } from '$app/paths';
 
 	let name = 'Adrián Lorenzo';
-	let description = `Chief Innovation Officer at The Agile Monkeys.
-I explore and build Artificial Intelligence solutions.
+	let description = `AI Research and Engineering.
+Chief Research Officer @ The Agile Monkeys.
   `;
 </script>
 
