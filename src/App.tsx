@@ -248,7 +248,7 @@ export default function PersonalSite() {
           <p>
             If you want to talk, just say hi on {" "}
             <Link href="https://www.linkedin.com/in/adrianlorenzomelian/">LinkedIn</Link> {" · "}
-            <Link href="https://twitter.com/xAdrianLorenzo">Twitter</Link>.
+            <Link href="https://twitter.com/adrianlorenzom">Twitter</Link>.
           </p>
         </motion.section>
 
