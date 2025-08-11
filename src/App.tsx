@@ -105,7 +105,7 @@ function SolarSystemBG({ enabled = true }: { enabled?: boolean }) {
 
         const alpha = 0.15 + 0.25 * (0.5 + 0.5 * Math.sin(t * 0.001 * s.tw + s.phase));
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = "#111";
+        ctx.fillStyle = "#fff";
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
         ctx.fill();
@@ -122,7 +122,7 @@ function SolarSystemBG({ enabled = true }: { enabled?: boolean }) {
       ctx.fill();
 
       // 3) Orbits (thin, faint ellipses)
-      ctx.strokeStyle = "rgba(10,10,10,0.18)";
+      ctx.strokeStyle = "rgba(255,255,255,0.12)";
       ctx.setLineDash([2, 8]); // dotted, very light
       for (const p of planetsRef.current) {
         ctx.beginPath();
@@ -141,8 +141,8 @@ function SolarSystemBG({ enabled = true }: { enabled?: boolean }) {
         const x = cx + Math.cos(p.phase) * p.a;
         const y = cy + Math.sin(p.phase) * p.b;
         ctx.globalAlpha = Math.max(0.25, p.alpha);
-        ctx.fillStyle = "#111";
-        ctx.shadowColor = "rgba(17,17,17,0.25)";
+        ctx.fillStyle = "#e5e5e5";
+        ctx.shadowColor = "rgba(255,255,255,0.15)";
         ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.arc(x, y, p.r, 0, Math.PI * 2);
@@ -179,7 +179,7 @@ function Link({ href, children }: React.PropsWithChildren<{ href: string }>) {
       href={href}
       target="_blank"
       rel="noreferrer noopener"
-      className="underline decoration-stone-300 underline-offset-4 transition hover:decoration-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 rounded"
+  className="underline decoration-stone-400/60 underline-offset-4 transition hover:decoration-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 rounded"
     >
       {children}
     </a>
@@ -203,21 +203,21 @@ export default function PersonalSite() {
   } as const;
 
   return (
-    <div className="relative min-h-screen bg-stone-50 text-stone-900 antialiased selection:bg-stone-900 selection:text-stone-50">
+    <div className="relative min-h-screen bg-night-bg text-night-text antialiased selection:bg-stone-200 selection:text-stone-900">
       {starsOn && <SolarSystemBG enabled={starsOn} />}
 
       {/* Soft vignette */}
-      <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(60%_60%_at_50%_-10%,rgba(16,16,16,0.06),transparent_60%)]" />
+      <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(60%_60%_at_50%_-10%,rgba(255,255,255,0.05),transparent_60%)]" />
 
       {/* Skip link */}
       <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 bg-stone-900 text-stone-50 rounded px-3 py-2">Skip to content</a>
 
       {/* Page content */}
-      <main id="content" className="relative z-[2] mx-auto max-w-6xl px-6 pt-24 pb-32 md:pt-36 text-[28px] md:text-[40px] leading-[1.9]">
+  <main id="content" className="relative z-[2] mx-auto max-w-6xl px-6 pt-24 pb-32 md:pt-36 text-[28px] md:text-[40px] leading-[1.9]">
         <motion.header {...fadeIn}>
           <p className="text-pretty">
             I’m <strong className="font-semibold">Adrián Lorenzo</strong>, an AI researcher / engineer, currently Chief Research Officer at {" "}
-            <Link href="https://www.theagilemonkeys.com">The Agile Monkeys</Link>.
+    <Link href="https://www.theagilemonkeys.com">The Agile Monkeys</Link>.
           </p>
         </motion.header>
 
@@ -237,7 +237,7 @@ export default function PersonalSite() {
               "built high-performance information retrieval systems.",
             ].map((item, i) => (
               <li key={i} className="group relative pl-7 leading-relaxed">
-                <span className="absolute left-0 top-3 text-stone-400 group-hover:text-stone-700 transition">•</span>
+                <span className="absolute left-0 top-3 text-stone-400 group-hover:text-stone-200 transition">•</span>
                 <span className="text-pretty">{item}</span>
               </li>
             ))}
