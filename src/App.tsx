@@ -187,7 +187,7 @@ function Link({ href, children }: React.PropsWithChildren<{ href: string }>) {
 }
 
 export default function PersonalSite() {
-  const [starsOn, setStarsOn] = useState<boolean>(true);
+  const [starsOn, _setStarsOn] = useState<boolean>(true);
 
   // Smooth scroll across the document
   useEffect(() => {
