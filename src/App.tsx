@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 function usePrefersReducedMotion(): boolean {
@@ -18,93 +18,136 @@ function usePrefersReducedMotion(): boolean {
   return reduced;
 }
 
-interface Star {
-  x: number;
-  y: number;
-  vy: number;
-  tw: number;
-  phase: number;
-  c: string;
-}
-
-function AsciiUniverse({ enabled = true }: { enabled?: boolean }) {
+function SolarSystemBG({ enabled = true }: { enabled?: boolean }) {
   const prefersReduced = usePrefersReducedMotion();
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rafRef = useRef<number>(0);
-  const gridRef = useRef<{ rows: number; cols: number; cellX: number; cellY: number; fontSize: number }>({ rows: 0, cols: 0, cellX: 10, cellY: 18, fontSize: 12 });
-  const starsRef = useRef<Star[]>([]);
-  const lastRef = useRef<number>(0);
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const rafRef = React.useRef<number>(0);
+  const lastRef = React.useRef<number>(0);
+
+  type Planet = { a: number; b: number; r: number; speed: number; phase: number; alpha: number };
+  const planetsRef = React.useRef<Planet[]>([]);
+  type Star = { x: number; y: number; size: number; tw: number; phase: number };
+  const starsRef = React.useRef<Star[]>([]);
+  const centerRef = React.useRef<{ x: number; y: number; sunR: number }>({ x: 0, y: 0, sunR: 60 });
 
   const setup = () => {
     const c = canvasRef.current;
     if (!c) return;
+
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const w = window.innerWidth;
     const h = window.innerHeight;
     c.width = Math.floor(w * dpr);
     c.height = Math.floor(h * dpr);
-    c.style.width = w + "px";
-    c.style.height = h + "px";
+    c.style.width = `${w}px`;
+    c.style.height = `${h}px`;
 
     const ctx = c.getContext("2d");
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const fontSize = Math.max(11, Math.min(16, Math.floor(Math.min(w, h) / 48)));
-    const cellX = fontSize * 0.62; 
-    const cellY = fontSize * 1.6;
-    const cols = Math.ceil(w / cellX);
-    const rows = Math.ceil(h / cellY);
-    gridRef.current = { rows, cols, cellX, cellY, fontSize };
+    // Place the sun a bit above the reading line to avoid competing with text.
+    const sunR = Math.max(40, Math.min(90, Math.min(w, h) * 0.08));
+    const cx = w * 0.5;
+    const cy = h * 0.24; // was 0.23–0.28; adjust if needed
+    centerRef.current = { x: cx, y: cy, sunR };
 
-    const count = Math.floor(cols * rows * 0.03);
-    const chars = [".", "·", "*", "+"];
-    starsRef.current = Array.from({ length: count }, () => ({
-      x: Math.random() * cols,
-      y: Math.random() * rows,
-      vy: 0.06 + Math.random() * 0.12,
+    // Planets: elliptical orbits with slightly different speeds
+    const orbits = 6; // tweak 3–5
+    const base = sunR * 1.7;
+    planetsRef.current = Array.from({ length: orbits }, (_, i) => {
+      const a = base + i * sunR * 0.9;      // major axis
+      const b = a * 0.8;                    // minor axis (ellipse)
+      const r = 2.0 + i * 0.9;              // planet radius
+      const speed = 0.12 / (i + 1);         // radians per second
+      const phase = Math.random() * Math.PI * 2;
+      const alpha = 0.55 - i * 0.08;        // more distant = lighter
+      return { a, b, r, speed, phase, alpha };
+    });
+
+    // Distant stars (do not fall—only twinkle & tiny parallax drift)
+    const starCount = Math.floor((w * h) * 0.00016); // subtle but visible
+    starsRef.current = Array.from({ length: starCount }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      size: Math.random() < 0.20 ? 1.6 : 1.1,
       tw: 0.6 + Math.random() * 0.8,
       phase: Math.random() * Math.PI * 2,
-      c: chars[(Math.random() * chars.length) | 0],
     }));
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     setup();
     window.addEventListener("resize", setup);
     return () => window.removeEventListener("resize", setup);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!enabled || prefersReduced) return;
-    const c = canvasRef.current;
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    if (!ctx) return;
+    const c = canvasRef.current!;
+    const ctx = c.getContext("2d")!;
+    const { x: cx, y: cy, sunR } = centerRef.current;
 
     const tick = (t: number) => {
-      const { rows, cellX, cellY, fontSize } = gridRef.current;
-      const stars = starsRef.current;
       const dt = Math.min(64, t - (lastRef.current || t));
       lastRef.current = t;
 
-      ctx.clearRect(0, 0, c.width, c.height);
-      ctx.font = `${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-      ctx.textBaseline = "top";
-      ctx.fillStyle = "#0a0a0a";
+      const w = c.width / (window.devicePixelRatio || 1);
+      const h = c.height / (window.devicePixelRatio || 1);
 
-      for (const s of stars) {
-        // advance
-        s.y += s.vy * (dt / 16);
-        if (s.y >= rows) s.y -= rows;
+      ctx.clearRect(0, 0, w, h);
 
-        // twinkle alpha (subtle)
-        const tw = 0.08 + 0.18 * (0.5 + 0.5 * Math.sin(t * 0.001 * s.tw + s.phase));
-        ctx.globalAlpha = tw;
+      // 1) Stars (twinkle + tiny parallax)
+      for (const s of starsRef.current) {
+        // gentle horizontal drift
+        s.x += 0.005 * (dt / 16);
+        if (s.x > w) s.x -= w;
 
-        const x = Math.floor(s.x) * cellX;
-        const y = Math.floor(s.y) * cellY;
-        ctx.fillText(s.c, x, y);
+        const alpha = 0.15 + 0.25 * (0.5 + 0.5 * Math.sin(t * 0.001 * s.tw + s.phase));
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "#111";
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 2) Sun (soft radial gradient)
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, sunR * 1.4);
+      g.addColorStop(0, "rgba(255, 210, 140, 0.35)");
+      g.addColorStop(1, "rgba(255, 210, 140, 0.00)");
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, sunR * 1.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3) Orbits (thin, faint ellipses)
+      ctx.strokeStyle = "rgba(10,10,10,0.18)";
+      ctx.setLineDash([2, 8]); // dotted, very light
+      for (const p of planetsRef.current) {
+        ctx.beginPath();
+        (ctx as any).ellipse?.(cx, cy, p.a, p.b, 0, 0, Math.PI * 2);
+        // fallback if ellipse is not supported
+        if (!(ctx as any).ellipse) {
+          ctx.arc(cx, cy, (p.a + p.b) / 2, 0, Math.PI * 2);
+        }
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // 4) Planets (tiny dots orbiting)
+      for (const p of planetsRef.current) {
+        p.phase += p.speed * (dt / 1000); // radians
+        const x = cx + Math.cos(p.phase) * p.a;
+        const y = cy + Math.sin(p.phase) * p.b;
+        ctx.globalAlpha = Math.max(0.25, p.alpha);
+        ctx.fillStyle = "#111";
+        ctx.shadowColor = "rgba(17,17,17,0.25)";
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(x, y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
       }
 
       rafRef.current = requestAnimationFrame(tick);
@@ -116,19 +159,19 @@ function AsciiUniverse({ enabled = true }: { enabled?: boolean }) {
 
   return (
     <div
-      aria-hidden
       className="pointer-events-none fixed inset-0 z-0"
       style={{
         maskImage:
-          "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.75) 58%, rgba(0,0,0,0.3) 78%, transparent 100%)",
+          "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.5) 80%, transparent 100%)",
         WebkitMaskImage:
-          "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.75) 58%, rgba(0,0,0,0.3) 78%, transparent 100%)",
-      } as React.CSSProperties}
+          "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.5) 80%, transparent 100%)",
+      }}
     >
       <canvas ref={canvasRef} className="h-full w-full" />
     </div>
   );
 }
+
 
 function Link({ href, children }: React.PropsWithChildren<{ href: string }>) {
   return (
@@ -161,7 +204,7 @@ export default function PersonalSite() {
 
   return (
     <div className="relative min-h-screen bg-stone-50 text-stone-900 antialiased selection:bg-stone-900 selection:text-stone-50">
-      {starsOn && <AsciiUniverse enabled={starsOn} />}
+      {starsOn && <SolarSystemBG enabled={starsOn} />}
 
       {/* Soft vignette */}
       <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(60%_60%_at_50%_-10%,rgba(16,16,16,0.06),transparent_60%)]" />
