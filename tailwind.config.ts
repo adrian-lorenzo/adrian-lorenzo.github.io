@@ -27,13 +27,24 @@ export default {
           'Times',
           'serif',
         ],
+        mono: [
+          'IBM Plex Mono',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          'Liberation Mono',
+          'Courier New',
+          'monospace',
+        ],
       },
       colors: {
         night: {
           bg: '#0b0e14', // deep space blue-black
           panel: '#11151f',
-          text: '#e6e6e6',
-          subtle: '#a1a1aa',
+          text: '#b8b8b8', // dimmer, more realistic old screen text
+          subtle: '#8a8a8a',
         },
       },
     },
