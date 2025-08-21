@@ -99,7 +99,7 @@ export default function PersonalSite() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-night-bg text-night-text antialiased selection:bg-stone-200 selection:text-stone-900">
+    <div className="relative min-h-screen min-h-dvh bg-night-bg text-night-text antialiased selection:bg-stone-200 selection:text-stone-900">
       <SolarSystemBackground enabled={true} />
       <BackgroundVignette />
       <AccessibilitySkipLink />

@@ -4,32 +4,34 @@
 
 @layer base {
 	html {
-	font-family: theme('fontFamily.mono');
+		font-family: theme('fontFamily.mono');
 		background-color: theme('colors.night.bg');
 		color: theme('colors.night.text');
+		min-height: 100vh;
+		min-height: 100dvh;
+		width: 100vw;
+		overflow-x: hidden;
 	}
 	
-	/* CRT Screen Effects */
 	body {
-		/* CRT color correction */
+		min-height: 100vh;
+		min-height: 100dvh;
+		width: 100vw;
+		overflow-x: hidden;
+		position: relative;
 		filter: contrast(1.1) brightness(1.05) saturate(1.2);
-		
-		/* Subtle screen flicker animation */
 		animation: crt-flicker 0.15s infinite linear alternate;
 	}
-	
-	/* Bigger scanlines overlay */
 	body::before {
 		content: '';
 		position: fixed;
 		top: 0;
 		left: 0;
-		width: 100%;
-		height: 100%;
+		width: 100vw;
+		height: 100vh;
+		height: 100dvh;
 		pointer-events: none;
 		z-index: 1;
-		
-		/* CSS-only bigger scanlines using repeating gradient */
 		background: repeating-linear-gradient(
 			0deg,
 			rgba(255, 255, 255, 0.02) 0px,
@@ -38,12 +40,29 @@
 			transparent 3px
 		);
 	}
+
+	body {
+		overflow-x: hidden;
+		overflow-y: auto;
+	}
 	
-	/* Subtle flicker animation */
 	@keyframes crt-flicker {
 		0% { opacity: 1; }
 		98% { opacity: 1; }
 		99% { opacity: 0.98; }
 		100% { opacity: 1; }
+	}
+	
+	#root {
+		min-height: 100vh;
+		min-height: 100dvh;
+		width: 100vw;
+		position: relative;
+	}
+		
+	.min-h-dvh {
+		min-height: 100vh;
+		min-height: 100dvh;
+		width: 100vw;
 	}
 }

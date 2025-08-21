@@ -23,6 +23,7 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number>(0);
   const lastFrameTimeRef = useRef<number>(0);
+  const appliedDevicePixelRatioRef = useRef<number>(1);
   const sunGradientRef = useRef<CanvasGradient | null>(null);
   const orbitPathsRef = useRef<Path2D[]>([]);
   const planetsRef = useRef<Planet[]>([]);
@@ -33,7 +34,11 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const devicePixelRatio = Math.min(SOLAR_SYSTEM_CONFIG.maxDevicePixelRatio, window.devicePixelRatio || 1);
+    const devicePixelRatio = Math.min(
+      SOLAR_SYSTEM_CONFIG.maxDevicePixelRatio,
+      window.devicePixelRatio || 1
+    );
+    appliedDevicePixelRatioRef.current = devicePixelRatio;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
@@ -112,8 +117,9 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
 
     const canvas = canvasRef.current!;
     const context = canvas.getContext("2d")!;
-    const viewportWidth = canvas.width / (window.devicePixelRatio || 1);
-    const viewportHeight = canvas.height / (window.devicePixelRatio || 1);
+  const devicePixelRatio = appliedDevicePixelRatioRef.current;
+  const viewportWidth = canvas.width / devicePixelRatio;
+  const viewportHeight = canvas.height / devicePixelRatio;
 
     context.clearRect(0, 0, viewportWidth, viewportHeight);
 
@@ -128,7 +134,11 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
   useEffect(() => {
     setupCanvas();
     window.addEventListener("resize", setupCanvas);
-    return () => window.removeEventListener("resize", setupCanvas);
+    window.addEventListener("orientationchange", setupCanvas);
+    return () => {
+      window.removeEventListener("resize", setupCanvas);
+      window.removeEventListener("orientationchange", setupCanvas);
+    };
   }, []);
 
   useEffect(() => {
