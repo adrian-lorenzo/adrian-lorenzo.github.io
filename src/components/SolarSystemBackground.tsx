@@ -1,18 +1,8 @@
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { SOLAR_SYSTEM_CONFIG, COLORS, ANIMATION_CONFIG } from "../constants/animation";
-import type { 
-  Planet, 
-  Star, 
-  SolarSystemCenter 
-} from "../utils/solarSystem";
-import { 
-  calculateSunRadius,
-  createPlanets,
-  createStars,
-  createOrbitPaths,
-  createSunGradient
-} from "../utils/solarSystem";
+import type { Star } from "../utils/solarSystem";
+import { createStars } from "../utils/solarSystem";
 
 interface SolarSystemBackgroundProps {
   enabled?: boolean;
@@ -24,11 +14,8 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
   const animationFrameRef = useRef<number>(0);
   const lastFrameTimeRef = useRef<number>(0);
   const appliedDevicePixelRatioRef = useRef<number>(1);
-  const sunGradientRef = useRef<CanvasGradient | null>(null);
-  const orbitPathsRef = useRef<Path2D[]>([]);
-  const planetsRef = useRef<Planet[]>([]);
+  // Removed sun/planet/orbit state, only stars now
   const starsRef = useRef<Star[]>([]);
-  const centerRef = useRef<SolarSystemCenter>({ x: 0, y: 0, sunRadius: 60 });
 
   const setupCanvas = () => {
     const canvas = canvasRef.current;
@@ -51,15 +38,7 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
     if (!context) return;
     context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
 
-    const sunRadius = calculateSunRadius(viewportWidth, viewportHeight);
-    const centerX = viewportWidth * 0.5;
-    const centerY = viewportHeight * 0.5;
-    centerRef.current = { x: centerX, y: centerY, sunRadius };
-
-    planetsRef.current = createPlanets(sunRadius);
-    starsRef.current = createStars(viewportWidth, viewportHeight);
-    orbitPathsRef.current = createOrbitPaths(planetsRef.current, centerX, centerY);
-    sunGradientRef.current = createSunGradient(context, centerX, centerY, sunRadius);
+  starsRef.current = createStars(viewportWidth, viewportHeight);
   };
 
   const renderStars = (context: CanvasRenderingContext2D, currentTime: number, deltaTime: number, viewportWidth: number) => {
@@ -79,37 +58,7 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
     }
   };
 
-  const renderSun = (context: CanvasRenderingContext2D) => {
-    const { x: centerX, y: centerY, sunRadius } = centerRef.current;
-    context.globalAlpha = 1;
-    context.fillStyle = sunGradientRef.current!;
-    context.beginPath();
-    context.arc(centerX, centerY, sunRadius * SOLAR_SYSTEM_CONFIG.sunGlowMultiplier, 0, Math.PI * 2);
-    context.fill();
-  };
-
-  const renderOrbits = (context: CanvasRenderingContext2D) => {
-    context.strokeStyle = COLORS.orbitStroke;
-    for (const orbitPath of orbitPathsRef.current) {
-      context.stroke(orbitPath);
-    }
-  };
-
-  const renderPlanets = (context: CanvasRenderingContext2D, deltaTime: number) => {
-    const { x: centerX, y: centerY } = centerRef.current;
-    context.fillStyle = COLORS.planetFill;
-    
-    for (const planet of planetsRef.current) {
-      planet.phase += planet.angularSpeed * (deltaTime / 1000);
-      const planetX = centerX + Math.cos(planet.phase) * planet.semiMajorAxis;
-      const planetY = centerY + Math.sin(planet.phase) * planet.semiMinorAxis;
-      
-      context.globalAlpha = Math.max(SOLAR_SYSTEM_CONFIG.planetMinAlpha, planet.opacity);
-      context.beginPath();
-      context.arc(planetX, planetY, planet.radius, 0, Math.PI * 2);
-      context.fill();
-    }
-  };
+  // Sun / orbits / planets removed
 
   const animate = (currentTime: number) => {
     const deltaTime = Math.min(ANIMATION_CONFIG.maxFrameDelta, currentTime - (lastFrameTimeRef.current || currentTime));
@@ -124,9 +73,7 @@ export function SolarSystemBackground({ enabled = true }: SolarSystemBackgroundP
     context.clearRect(0, 0, viewportWidth, viewportHeight);
 
     renderStars(context, currentTime, deltaTime, viewportWidth);
-    renderSun(context);
-    renderOrbits(context);
-    renderPlanets(context, deltaTime);
+  // Only stars
 
     animationFrameRef.current = requestAnimationFrame(animate);
   };

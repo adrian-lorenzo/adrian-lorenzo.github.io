@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { SolarSystemBackground } from "./components/SolarSystemBackground";
 import { ExternalLink } from "./components/ExternalLink";
 import { BulletList } from "./components/BulletList";
-import { useViewportFontSize } from "./hooks/useViewportFontSize";
 import { ANIMATION_CONFIG } from "./constants/animation";
 import { PERSONAL_INFO, PROFESSIONAL_FOCUS, RECENT_ACCOMPLISHMENTS, SOCIAL_LINKS } from "./constants/content";
+import { InfiniteMarquee } from "./components/InfiniteMarquee";
+import { PlanetOrbitIcon } from "./components/PlanetOrbitIcon";
 
 function AccessibilitySkipLink() {
   return (
@@ -66,7 +67,7 @@ function ContactSection() {
 }
 
 function MainContent() {
-  const fontSize = useViewportFontSize();
+  const contentRef = useRef<HTMLElement | null>(null);
   
   const fadeInAnimation = {
     initial: { opacity: 0 },
@@ -81,9 +82,12 @@ function MainContent() {
     <motion.main
       id="content"
       {...fadeInAnimation}
-      style={{ fontSize }}
-      className="relative z-[2] mx-auto max-w-3xl px-6 py-16 md:py-20 leading-[1.75]"
+      className="relative z-[2] mx-auto max-w-3xl px-6 pt-8 pb-16 md:pt-12 md:pb-20 leading-[1.7] content-responsive-text"
+      ref={contentRef as any}
     >
+      <div className="mb-4 flex justify-center">
+        <PlanetOrbitIcon size={140} />
+      </div>
       <PersonalIntroduction />
       <ProfessionalFocusSection />
       <RecentAccomplishmentsSection />
@@ -100,6 +104,8 @@ export default function PersonalSite() {
 
   return (
     <div className="relative min-h-screen min-h-dvh bg-night-bg text-night-text antialiased selection:bg-stone-200 selection:text-stone-900">
+  <InfiniteMarquee position="top" direction="left" />
+  <InfiniteMarquee position="bottom" direction="right" />
       <SolarSystemBackground enabled={true} />
       <BackgroundVignette />
       <AccessibilitySkipLink />

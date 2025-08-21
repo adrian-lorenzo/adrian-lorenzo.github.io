@@ -66,3 +66,41 @@
 		width: 100vw;
 	}
 }
+
+@layer components {
+	@keyframes marquee-left {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	@keyframes marquee-right {
+		0% { transform: translateX(-50%); }
+		100% { transform: translateX(0); }
+	}
+	.animate-marquee-left { animation: marquee-left var(--marquee-duration,48s) linear infinite; }
+	.animate-marquee-right { animation: marquee-right var(--marquee-duration,48s) linear infinite; }
+	@media (prefers-reduced-motion: reduce) {
+		.animate-marquee-left, .animate-marquee-right { animation-play-state: paused; }
+	}
+		@keyframes orbit {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+		.orbit-spin { animation: orbit 20s linear infinite; transform-origin: 50px 50px; }
+		@media (prefers-reduced-motion: reduce) { .orbit-spin { animation: none; } }
+			/* Responsive static font sizing for common Apple device viewports */
+			:root { --content-fsz: 25px; }
+			/* Larger iPhones */
+			@media (min-width: 375px) and (min-height: 700px) { :root { --content-fsz: 12px; } }
+			@media (min-width: 390px) and (min-height: 780px) { :root { --content-fsz: 13.5px; } }
+			@media (min-width: 414px) and (min-height: 820px) { :root { --content-fsz: 15.5px; } }
+			/* iPad portrait */
+			@media (min-width: 768px) and (min-height: 1000px) { :root { --content-fsz: 17px; } }
+			/* iPad landscape / small laptops */
+			@media (min-width: 1024px) and (min-height: 780px) { :root { --content-fsz: 17.5px; } }
+			@media (min-width: 1280px) and (min-height: 830px) { :root { --content-fsz: 18px; } }
+			@media (min-width: 1440px) and (min-height: 880px) { :root { --content-fsz: 18.5px; } }
+			@media (min-width: 1536px) and (min-height: 950px) { :root { --content-fsz: 19px; } }
+			@media (min-width: 1720px) and (min-height: 1020px) { :root { --content-fsz: 19.5px; } }
+
+			.content-responsive-text { font-size: var(--content-fsz); }
+}
